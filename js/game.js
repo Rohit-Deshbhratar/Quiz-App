@@ -1,0 +1,104 @@
+const question = document.getElementById("question");
+const choices = Array.from(document.getElementsByClassName("choice-text"));
+const progressText = document.getElementById('progressText');
+const scoreText = document.getElementById('score');
+const progressBarFull = document.getElementById('progress-bar-full');
+
+let currentQuestion = {};
+let acceptingAnswers = true;
+let score = 0;
+let questionCounter = 0;
+let availabeQuestion = [];
+
+let questions = [
+  {
+    question: "Inside which HTML element do we put JavaScript?",
+    choice1: "<script>",
+    choice2: "<javascript>",
+    choice3: "<js>",
+    choice4: "<scripting>",
+    answer: 1,
+  },
+  {
+    question: 'What is the correct syntax for referring to an external script called "xxx.js"?',
+    choice1: "<script href='xxx.js'>",
+    choice2: "<script name='xxx.js'>",
+    choice3: "<script src='xxx.js'>",
+    choice4: "<script file='xxx.js'>",
+    answer: 3,
+  },
+  {
+    question: "How do you write 'Hello World' in alert box?",
+    choice1: "msgBox('Hello World');",
+    choice2: "alertBox('Hello World');",
+    choice3: "msg('Hello World');",
+    choice4: "alert('Hello World');",
+    answer: 4,
+  }
+];
+
+//CONSTANTS
+
+const CORRECT_BONUS = 10;
+const MAX_QUESTION = 3;
+
+startGame = () => {
+    questionCounter = 0;
+    score = 0;
+    availabeQuestion = [...questions];
+    getNewQuestions();
+};
+
+getNewQuestions = () => {
+    if(availabeQuestion.length === 0 || questionCounter >= MAX_QUESTION){
+        //go to end page.
+        return window.location.assign('/end.html');
+    }
+    questionCounter++;
+    progressText.innerText = `Question ${questionCounter}/${MAX_QUESTION}`;
+
+    // UPDATE PROGRESS BAR
+    progressBarFull.style.width = `${((questionCounter / MAX_QUESTION) * 100)}%`;
+
+    const questionIndex = Math.floor(Math.random() * availabeQuestion.length);
+    currentQuestion = availabeQuestion[questionIndex];
+    question.innerText = currentQuestion.question;
+
+    choices.forEach((choice) => {
+        const number = choice.dataset['number'];
+        choice.innerText = currentQuestion['choice' + number];
+    });
+
+    availabeQuestion.splice(questionIndex, 1);
+    acceptingAnswers = true;
+};
+
+choices.forEach((choice) => {
+    choice.addEventListener('click', (e) => {
+        if (!acceptingAnswers) return;
+
+        acceptingAnswers = false;
+        const selectedChoice = e.target;
+        const selectedAnswer = selectedChoice.dataset['number'];
+
+        const classToApply = selectedAnswer == currentQuestion.answer ? "correct" : "incorrect";
+
+        if(classToApply == 'correct'){
+          incrementScore(CORRECT_BONUS);
+        }
+
+        selectedChoice.parentElement.classList.add(classToApply);
+
+        setTimeout(() => {
+          selectedChoice.parentElement.classList.remove(classToApply);
+          getNewQuestions();
+        }, 1000);
+    });
+});
+
+incrementScore = num => {
+  score += num;
+  scoreText.innerText = score;
+}
+
+startGame();
